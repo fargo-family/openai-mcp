@@ -16,6 +16,7 @@ from .openai_service import OpenAIService
 
 
 _LOGGING_CONFIGURED = False
+logger = logging.getLogger(__name__)
 
 
 def configure_logging(level: int = logging.DEBUG) -> None:
@@ -40,6 +41,13 @@ def configure_logging(level: int = logging.DEBUG) -> None:
         logging.getLogger(name).setLevel(level)
 
     _LOGGING_CONFIGURED = True
+
+
+def _log_tool_payload(tool_name: str, payload: Any) -> Any:
+    """Emit the final payload for observability and return it unchanged."""
+
+    logger.info("Tool %s payload: %s", tool_name, payload)
+    return payload
 
 
 class ImageSize(StrEnum):
@@ -173,7 +181,9 @@ def create_server(settings: Settings | None = None) -> FastMCP:
         the LLM reason about token budgeting.
         """
 
-        return await service.chat_completion(
+        return _log_tool_payload(
+            "chat_completion",
+            await service.chat_completion(
             prompt,
             system_prompt=system_prompt,
             model=model,
@@ -186,6 +196,7 @@ def create_server(settings: Settings | None = None) -> FastMCP:
             frequency_penalty=frequency_penalty,
             seed=seed,
             metadata=metadata,
+            ),
         )
 
     @server.tool
@@ -226,12 +237,15 @@ def create_server(settings: Settings | None = None) -> FastMCP:
         if not 1 <= count <= 10:
             raise ValueError("count must be between 1 and 10")
 
-        return await service.generate_image(
+        return _log_tool_payload(
+            "generate_image",
+            await service.generate_image(
             prompt,
             size=size,
             quality=quality,
             count=count,
             user=user,
+            ),
         )
 
     @server.tool
@@ -266,12 +280,15 @@ def create_server(settings: Settings | None = None) -> FastMCP:
         with the effective format, selected voice, and byte length.
         """
 
-        return await service.generate_audio(
+        return _log_tool_payload(
+            "synthesize_speech",
+            await service.generate_audio(
             text,
             model=model,
             voice=voice,
             response_format=response_format,
             speed=speed,
+            ),
         )
 
     @server.tool
@@ -319,12 +336,15 @@ def create_server(settings: Settings | None = None) -> FastMCP:
         if variant not in allowed_variants:
             raise ValueError("variant must be video, thumbnail, or spritesheet")
 
-        return await service.generate_video(
+        return _log_tool_payload(
+            "generate_video",
+            await service.generate_video(
             prompt,
             model=model,
             seconds=seconds,
             size=size,
             variant=variant,
+            ),
         )
 
     @server.tool
@@ -351,9 +371,12 @@ def create_server(settings: Settings | None = None) -> FastMCP:
             normalized = capability.lower()
         else:
             normalized = None
-        return await service.list_supported_models(
+        return _log_tool_payload(
+            "list_supported_models",
+            await service.list_supported_models(
             normalized,
             include_provider_metadata,
+            ),
         )
 
     @server.custom_route("/healthz", methods=["GET"], include_in_schema=False)
