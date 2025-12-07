@@ -7,6 +7,8 @@ from typing import Annotated, Any
 
 from fastmcp import FastMCP
 from pydantic import Field
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse
 
 from .auth import StaticAPIKeyAuth
 from .config import Settings
@@ -353,6 +355,12 @@ def create_server(settings: Settings | None = None) -> FastMCP:
             normalized,
             include_provider_metadata,
         )
+
+    @server.custom_route("/healthz", methods=["GET"], include_in_schema=False)
+    async def health_check(_: Request) -> PlainTextResponse:
+        """Simple unauthenticated liveness probe."""
+
+        return PlainTextResponse("ok", status_code=200)
 
     return server
 
