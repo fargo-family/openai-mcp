@@ -6,8 +6,8 @@ trigger:
 variables:
   imageName: fastmcp-openai
   dockerfilePath: Dockerfile
-  dockerHubRepository: $(DOCKERHUB_REPOSITORY)
-  dockerHubServiceConnection: $(DOCKERHUB_SERVICE_CONNECTION)
+  dockerHubRepository: "zaksir/openai-mcp"
+  dockerHubServiceConnection: "sc-docker-hub-zaksir"
 
 stages:
   - stage: BuildAndPublish
