@@ -1,0 +1,8 @@
+[submodule "external/openai/openai-python"]
+	path = external/openai/openai-python
+	url = https://github.com/openai/openai-python.git
+	branch = main
+[submodule "external/jlowin/fastmcp"]
+	path = external/jlowin/fastmcp
+	url = https://github.com/jlowin/fastmcp.git
+	branch = main

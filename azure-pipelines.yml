@@ -1,0 +1,38 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  imageName: fastmcp-openai
+  dockerfilePath: Dockerfile
+  dockerHubRepository: $(DOCKERHUB_REPOSITORY)
+  dockerHubServiceConnection: $(DOCKERHUB_SERVICE_CONNECTION)
+
+stages:
+  - stage: BuildAndPublish
+    displayName: Build and publish container image
+    jobs:
+      - job: Docker
+        displayName: Build + Push
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            clean: true
+            submodules: true
+
+          - task: Docker@2
+            displayName: Build and push to Docker Hub
+            inputs:
+              command: buildAndPush
+              containerRegistry: $(dockerHubServiceConnection)
+              repository: $(dockerHubRepository)
+              dockerfile: $(dockerfilePath)
+              buildContext: .
+              tags: |
+                $(Build.BuildNumber)
+                latest
+              arguments: >
+                --label org.opencontainers.image.source=$(Build.Repository.Uri)
+                --label org.opencontainers.image.revision=$(Build.SourceVersion)

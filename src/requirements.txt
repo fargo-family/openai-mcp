@@ -1,0 +1,7 @@
+fastmcp
+openai
+python-dotenv>=1.0
+anyio>=4.4
+uvicorn>=0.30
+azure-storage-blob>=12.19
+aiohttp
